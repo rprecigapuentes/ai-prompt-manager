@@ -1,0 +1,33 @@
+{
+  "name": "ai-prompt-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rprecigapuentes/ai-prompt-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/rprecigapuentes/ai-prompt-manager/issues"
+  },
+  "homepage": "https://github.com/rprecigapuentes/ai-prompt-manager#readme",
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "ejs": "^5.0.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.7.0",
+    "@cucumber/pretty-formatter": "^3.2.0",
+    "allure-commandline": "^2.38.1",
+    "eslint": "^10.0.3",
+    "selenium-webdriver": "^4.41.0"
+  }
+}
