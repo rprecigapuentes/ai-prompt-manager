@@ -7,14 +7,25 @@ router.get('/', (req, res) => {
   const { search, tag } = req.query;
   let prompts;
 
-  if (search) {
+  if (search && tag) {
+    // Both filters active: match keyword AND exact tag
+    prompts = db.prepare(
+      `SELECT * FROM prompts
+       WHERE (title LIKE ? OR body LIKE ?)
+         AND (',' || REPLACE(tags, ' ', '') || ',') LIKE ('%,' || ? || ',%')
+       ORDER BY created_at DESC`
+    ).all(`%${search}%`, `%${search}%`, tag);
+  } else if (search) {
     prompts = db.prepare(
       `SELECT * FROM prompts WHERE title LIKE ? OR body LIKE ? ORDER BY created_at DESC`
     ).all(`%${search}%`, `%${search}%`);
   } else if (tag) {
+    // Exact whole-word tag match using comma wrapping
     prompts = db.prepare(
-      `SELECT * FROM prompts WHERE tags LIKE ? ORDER BY created_at DESC`
-    ).all(`%${tag}%`);
+      `SELECT * FROM prompts
+       WHERE (',' || REPLACE(tags, ' ', '') || ',') LIKE ('%,' || ? || ',%')
+       ORDER BY created_at DESC`
+    ).all(tag);
   } else {
     prompts = db.prepare(`SELECT * FROM prompts ORDER BY created_at DESC`).all();
   }
@@ -45,8 +56,9 @@ router.post('/prompts', (req, res) => {
   if (!title || !body) {
     return res.render('create', { error: 'Title and body are required.' });
   }
+  const normalizedTags = (tags || '').split(',').map(t => t.trim()).filter(Boolean).join(',');
   db.prepare(`INSERT INTO prompts (title, body, tags) VALUES (?, ?, ?)`).run(
-    title.trim(), body.trim(), (tags || '').trim()
+    title.trim(), body.trim(), normalizedTags
   );
   res.redirect('/');
 });
@@ -72,8 +84,9 @@ router.post('/prompts/:id/edit', (req, res) => {
     const prompt = db.prepare(`SELECT * FROM prompts WHERE id = ?`).get(req.params.id);
     return res.render('edit', { prompt, error: 'Title and body are required.' });
   }
+  const normalizedTags = (tags || '').split(',').map(t => t.trim()).filter(Boolean).join(',');
   db.prepare(`UPDATE prompts SET title = ?, body = ?, tags = ? WHERE id = ?`).run(
-    title.trim(), body.trim(), (tags || '').trim(), req.params.id
+    title.trim(), body.trim(), normalizedTags, req.params.id
   );
   res.redirect(`/prompts/${req.params.id}`);
 });

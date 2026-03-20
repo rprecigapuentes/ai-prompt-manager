@@ -19,6 +19,9 @@
     </div>
 
     <form action="/" method="GET" class="search-form">
+      <% if (activeTag) { %>
+        <input type="hidden" name="tag" value="<%= activeTag %>">
+      <% } %>
       <input
         type="text"
         name="search"
@@ -46,8 +49,13 @@
 
     <% if (prompts.length === 0) { %>
       <div class="empty-state">
-        <p>No prompts found.</p>
-        <a href="/prompts/new" class="btn btn-primary">Create your first prompt</a>
+        <% if (search || activeTag) { %>
+          <p>No prompts found for this filter.</p>
+          <a href="/" class="btn btn-ghost">Clear filters</a>
+        <% } else { %>
+          <p>No prompts yet.</p>
+          <a href="/prompts/new" class="btn btn-primary">Create your first prompt</a>
+        <% } %>
       </div>
     <% } else { %>
       <div class="prompt-list">
