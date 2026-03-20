@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Prompt — AI Prompt Manager</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-brand">AI Prompt Manager</a>
+    <a href="/logout" class="btn btn-secondary btn-sm">Logout</a>
+  </nav>
+
+  <main class="container">
+    <div class="page-header">
+      <h2>Edit Prompt</h2>
+      <a href="/prompts/<%= prompt.id %>" class="btn btn-ghost">← Back</a>
+    </div>
+
+    <% if (error) { %>
+      <div class="alert alert-error"><%= error %></div>
+    <% } %>
+
+    <form action="/prompts/<%= prompt.id %>/edit" method="POST" class="prompt-form">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" value="<%= prompt.title %>" required>
+      </div>
+      <div class="form-group">
+        <label for="body">Prompt Body</label>
+        <textarea id="body" name="body" rows="8" required><%= prompt.body %></textarea>
+      </div>
+      <div class="form-group">
+        <label for="tags">Tags <span class="label-hint">(comma-separated)</span></label>
+        <input type="text" id="tags" name="tags" value="<%= prompt.tags %>">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Update Prompt</button>
+        <a href="/prompts/<%= prompt.id %>" class="btn btn-ghost">Cancel</a>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

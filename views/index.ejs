@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Prompts — AI Prompt Manager</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="nav-brand">AI Prompt Manager</span>
+    <a href="/logout" class="btn btn-secondary btn-sm">Logout</a>
+  </nav>
+
+  <main class="container">
+    <div class="page-header">
+      <h2>My Prompts</h2>
+      <a href="/prompts/new" class="btn btn-primary">+ New Prompt</a>
+    </div>
+
+    <form action="/" method="GET" class="search-form">
+      <input
+        type="text"
+        name="search"
+        id="search"
+        placeholder="Search prompts..."
+        value="<%= search %>"
+        class="search-input"
+      >
+      <button type="submit" class="btn btn-secondary">Search</button>
+      <% if (search || activeTag) { %>
+        <a href="/" class="btn btn-ghost">Clear</a>
+      <% } %>
+    </form>
+
+    <% if (allTags.length > 0) { %>
+      <div class="tag-cloud">
+        <% allTags.forEach(tag => { %>
+          <a
+            href="/?tag=<%= encodeURIComponent(tag) %>"
+            class="tag <%= activeTag === tag ? 'tag-active' : '' %>"
+          ><%= tag %></a>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (prompts.length === 0) { %>
+      <div class="empty-state">
+        <p>No prompts found.</p>
+        <a href="/prompts/new" class="btn btn-primary">Create your first prompt</a>
+      </div>
+    <% } else { %>
+      <div class="prompt-list">
+        <% prompts.forEach(prompt => { %>
+          <div class="prompt-card">
+            <div class="prompt-card-body">
+              <h3><a href="/prompts/<%= prompt.id %>"><%= prompt.title %></a></h3>
+              <p class="prompt-preview"><%= prompt.body.substring(0, 120) %><%= prompt.body.length > 120 ? '...' : '' %></p>
+              <% if (prompt.tags) { %>
+                <div class="tag-list">
+                  <% prompt.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => { %>
+                    <a href="/?tag=<%= encodeURIComponent(tag) %>" class="tag"><%= tag %></a>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+            <div class="prompt-card-actions">
+              <a href="/prompts/<%= prompt.id %>/edit" class="btn btn-secondary btn-sm">Edit</a>
+              <form action="/prompts/<%= prompt.id %>/delete" method="POST" style="display:inline">
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this prompt?')">Delete</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+</body>
+</html>

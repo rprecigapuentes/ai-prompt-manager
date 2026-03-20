@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= prompt.title %> — AI Prompt Manager</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-brand">AI Prompt Manager</a>
+    <a href="/logout" class="btn btn-secondary btn-sm">Logout</a>
+  </nav>
+
+  <main class="container">
+    <div class="page-header">
+      <h2><%= prompt.title %></h2>
+      <a href="/" class="btn btn-ghost">← Back</a>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-body">
+        <p class="prompt-body-text"><%= prompt.body %></p>
+      </div>
+
+      <% if (prompt.tags) { %>
+        <div class="tag-list">
+          <% prompt.tags.split(',').map(t => t.trim()).filter(Boolean).forEach(tag => { %>
+            <a href="/?tag=<%= encodeURIComponent(tag) %>" class="tag"><%= tag %></a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <div class="detail-actions">
+        <a href="/prompts/<%= prompt.id %>/edit" class="btn btn-secondary">Edit</a>
+        <form action="/prompts/<%= prompt.id %>/delete" method="POST" style="display:inline">
+          <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this prompt?')">Delete</button>
+        </form>
+        <button id="ask-ai-btn" class="btn btn-primary" data-id="<%= prompt.id %>">Ask AI</button>
+      </div>
+    </div>
+
+    <div id="ai-response-box" class="ai-response-box" style="display:none">
+      <h3>AI Response</h3>
+      <p id="ai-response-text"></p>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('ask-ai-btn').addEventListener('click', function () {
+      const btn = this;
+      btn.textContent = 'Asking...';
+      btn.disabled = true;
+
+      fetch('/ai/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          promptId: '<%= prompt.id %>',
+          promptBody: <%- JSON.stringify(prompt.body) %>
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          const box = document.getElementById('ai-response-box');
+          const text = document.getElementById('ai-response-text');
+          text.textContent = data.response || data.error;
+          box.style.display = 'block';
+          btn.textContent = 'Ask AI';
+          btn.disabled = false;
+        })
+        .catch(() => {
+          document.getElementById('ai-response-text').textContent = 'Error contacting AI service.';
+          document.getElementById('ai-response-box').style.display = 'block';
+          btn.textContent = 'Ask AI';
+          btn.disabled = false;
+        });
+    });
+  </script>
+</body>
+</html>
