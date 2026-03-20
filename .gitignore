@@ -5,6 +5,9 @@ NOTES.md
 CLAUDE.md
 CLAUDE.md:Zone.Identifier
 
+# sqlite database
+/data/*.db
+
 # dependencies
 /node_modules
 /.pnp
