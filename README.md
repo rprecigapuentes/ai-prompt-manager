@@ -86,6 +86,16 @@ ai-prompt-manager/
 
 ---
 
+## Linting
+
+```bash
+npm run lint
+```
+
+ESLint checks all source files for errors and style issues (unused variables, missing semicolons, wrong quote style, etc.). The CI pipeline runs this before tests.
+
+---
+
 ## Running Tests
 
 ```bash

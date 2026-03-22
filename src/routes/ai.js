@@ -10,7 +10,7 @@ const mockResponses = [
 ];
 
 router.post('/ai/ask', (req, res) => {
-  const { promptId, promptBody } = req.body;
+  const { promptBody } = req.body;
 
   if (!promptBody) {
     return res.status(400).json({ error: 'No prompt body provided.' });

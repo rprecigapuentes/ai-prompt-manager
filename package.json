@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
+    "lint": "eslint app.js src/**/*.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@cucumber/cucumber": "^12.7.0",
     "@cucumber/pretty-formatter": "^3.2.0",
+    "@eslint/js": "^10.0.1",
     "allure-commandline": "^2.38.1",
     "eslint": "^10.0.3",
     "selenium-webdriver": "^4.41.0"
