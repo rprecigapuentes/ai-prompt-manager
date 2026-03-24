@@ -1,0 +1,9 @@
+node_modules
+data
+allure-results
+allure-report
+test
+docs
+.git
+.gitignore
+*.md

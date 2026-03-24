@@ -1,8 +1,35 @@
 # AI Prompt Manager
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-v24-339933?logo=node.js&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Testing-Selenium_WebDriver-43B02A?logo=selenium&logoColor=white"/>
+  <img src="https://img.shields.io/badge/BDD-Cucumber.js-23D96C?logo=cucumber&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Containers-Docker-2496ED?logo=docker&logoColor=white"/>
+  <img src="https://img.shields.io/badge/CI%2FCD-Jenkins-D24939?logo=jenkins&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Reports-Allure-FF6B6B"/>
+  <img src="https://img.shields.io/badge/Linting-ESLint-4B32C3?logo=eslint&logoColor=white"/>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Scenarios-14_passing-brightgreen"/>
+  <img src="https://img.shields.io/badge/Steps-97_passing-brightgreen"/>
+  <img src="https://img.shields.io/badge/Pass_Rate-100%25-brightgreen"/>
+  <img src="https://img.shields.io/badge/Pattern-Page_Object_Model-blue"/>
+</p>
+
 A web application for managing AI prompts — create, edit, delete, search, and test prompts with a built-in mock AI response feature.
 
-Built as a portfolio project to demonstrate **test automation skills** using industry-standard tools: Selenium WebDriver, Cucumber.js, Docker, Jenkins, and Allure Reports.
+Built as a portfolio project to demonstrate **end-to-end test automation skills** using industry-standard tools: Selenium WebDriver, Cucumber.js (BDD/Gherkin), Docker, Jenkins CI/CD, and Allure Reports.
+
+---
+
+## App Screenshot
+
+<p align="center">
+  <img src="docs/ai-prompt-maganger-ui.png" alt="AI Prompt Manager UI" width="800"/>
+</p>
 
 ---
 
@@ -17,7 +44,7 @@ Built as a portfolio project to demonstrate **test automation skills** using ind
 | CI/CD | Jenkins |
 | Reporting | Allure Reports |
 | Containers | Docker, docker-compose |
-| Linting | ESLint |
+| Linting | ESLint (flat config) |
 
 ---
 
@@ -28,33 +55,7 @@ Built as a portfolio project to demonstrate **test automation skills** using ind
 - Each prompt has a title, body, and comma-separated tags
 - Keyword search across title and body
 - Tag filtering — click any tag to filter the list
-- "Ask AI" button on each prompt — sends the prompt to a mock endpoint and displays a simulated AI response without reloading the page
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js v18+ — install with [nvm](https://github.com/nvm-sh/nvm):
-  ```bash
-  nvm install --lts
-  nvm use --lts
-  ```
-- Google Chrome (required for Selenium tests)
-
-### Install & Run
-
-```bash
-git clone https://github.com/rprecigapuentes/ai-prompt-manager.git
-cd ai-prompt-manager
-npm install
-npm start
-```
-
-Open `http://localhost:3000/login` in your browser. Sign in with any username and password.
-
-The SQLite database is created automatically at `data/prompts.db` on first run.
+- "Ask AI" button on each prompt — sends the prompt to a mock endpoint and displays a simulated response without reloading the page
 
 ---
 
@@ -65,6 +66,9 @@ ai-prompt-manager/
 ├── app.js                  # Entry point — starts the Express server
 ├── package.json            # Dependencies and npm scripts
 ├── cucumber.js             # Cucumber runner config (features, steps, Allure reporter)
+├── Dockerfile              # Container image for the app
+├── docker-compose.yml      # App + Selenium Chrome services
+├── Jenkinsfile             # 5-stage CI/CD pipeline definition
 ├── src/
 │   ├── db.js               # SQLite database setup
 │   └── routes/
@@ -85,43 +89,149 @@ ai-prompt-manager/
 │   ├── step-definitions/   # Selenium step definitions
 │   ├── pages/              # Page Object Model classes
 │   └── support/            # World setup, hooks, Allure environment config
-└── docs/                   # Test evidence — Allure report exports (PDF + CSV)
+└── docs/                   # Test evidence — Allure exports (PDF + CSV)
 ```
 
 ---
 
-## Linting
+## Quick Start — Docker (Recommended)
+
+This is the fastest way to run the app and the full test suite without installing anything beyond Docker.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + docker-compose on Linux)
+- Node.js v18+ — only needed to run `npm run test:docker` and generate the report locally
+
+### 1. Clone and start the containers
+
+```bash
+git clone https://github.com/rprecigapuentes/ai-prompt-manager.git
+cd ai-prompt-manager
+docker compose up -d
+```
+
+This starts two containers:
+- `ai-prompt-manager` — the Express app on port `3000`
+- `selenium-chrome` — Selenium Grid with headless Chrome on port `4444`
+
+Verify both are running:
+
+```bash
+docker compose ps
+```
+
+The app is available at `http://localhost:3000/login`.
+
+### 2. Install local dependencies
+
+```bash
+npm install
+```
+
+This installs Cucumber, Allure CLI, and Selenium WebDriver locally — needed to drive the tests and generate the report.
+
+### 3. Run the test suite
+
+```bash
+npm run test:docker
+```
+
+This script:
+1. Detects the app container's internal IP
+2. Runs all 14 Cucumber scenarios using the Selenium Grid container
+3. Writes Allure result files to `allure-results/`
+
+Expected output:
+```
+Running tests against APP_URL=http://172.x.x.x:3000 via SELENIUM_URL=http://localhost:4444
+.............................................................................................................................
+
+14 scenarios (14 passed)
+97 steps (97 passed)
+0m25.045s
+```
+
+### 4. Generate the Allure report
+
+```bash
+npm run report
+```
+
+This reads `allure-results/` and generates a full HTML report in `allure-report/`.
+
+### 5. View the Allure report
+
+```bash
+python3 -m http.server 5050 --directory allure-report
+```
+
+Open `http://localhost:5050` in your browser.
+
+> **Note for WSL2 users:** use `localhost` (not `127.0.0.1`) in your Windows browser.
+
+### 6. Stop the containers
+
+```bash
+docker compose down
+```
+
+---
+
+## Local Development (Without Docker)
+
+### Prerequisites
+
+- Node.js v18+ (install with [nvm](https://github.com/nvm-sh/nvm))
+- Google Chrome (required for local Selenium tests)
+
+### Install & Run
+
+```bash
+npm install
+npm start
+```
+
+Open `http://localhost:3000/login`. Sign in with any username and password.
+
+### Run lint
 
 ```bash
 npm run lint
 ```
 
-ESLint checks all source files for errors and style issues (unused variables, missing semicolons, wrong quote style, etc.). The CI pipeline runs this before tests.
+### Run tests locally
 
----
-
-## Running Tests
-
-The app must be running before executing the test suite.
-
-**Terminal 1 — start the app:**
+**Terminal 1:**
 ```bash
 npm start
 ```
 
-**Terminal 2 — run tests:**
+**Terminal 2:**
 ```bash
 npm test
 ```
 
-This clears previous results and runs all 14 Cucumber scenarios against a headless Chrome browser.
-
-### Generate & view the Allure report
+Then generate and view the report:
 
 ```bash
-npm run report        # generates allure-report/ from allure-results/
-allure open allure-report
+npm run report
+python3 -m http.server 5050 --directory allure-report
 ```
+
+---
+
+## CI/CD Pipeline (Jenkinsfile)
+
+The `Jenkinsfile` defines a 5-stage pipeline:
+
+| Stage | Command | Purpose |
+|---|---|---|
+| Install | `npm ci` | Install exact dependency versions |
+| Lint | `npm run lint` | Enforce code quality before tests |
+| Build | `docker-compose build` | Build the app image |
+| Test | `npm test` | Run all 14 Cucumber scenarios |
+| Report | `npm run report` | Generate and publish Allure report |
 
 ---
 
@@ -132,7 +242,7 @@ allure open allure-report
 | Directory | Purpose |
 |---|---|
 | `test/features/` | 5 Gherkin feature files written in plain English |
-| `test/step-definitions/` | JavaScript functions that connect Gherkin steps to Selenium actions |
+| `test/step-definitions/` | JavaScript functions connecting Gherkin steps to Selenium actions |
 | `test/pages/` | Page Object Model — one class per page, encapsulates all selectors and actions |
 | `test/support/` | Cucumber World (WebDriver setup), Before/After hooks, Allure environment writer |
 
@@ -162,35 +272,27 @@ allure open allure-report
 
 ## Test Results: From 35.71% to 100%
 
-On the first real browser run, **5 of 14 scenarios passed (35.71%)**. The remaining 9 failed due to a series of bugs in the test code — not in the app itself. Each bug was diagnosed and fixed systematically.
-
-### Bugs found and fixed
+On the first real browser run, **5 of 14 scenarios passed (35.71%)**. The remaining 9 failed due to bugs in the test code. Each was diagnosed from the Allure report and fixed.
 
 | # | Bug | Root cause | Fix |
 |---|---|---|---|
-| 1 | Step timeout after 5s | Cucumber's default step timeout was too short for headless Chrome startup | Set `setDefaultTimeout(30000)` in `world.js` |
-| 2 | `confirm()` dialog crashed Selenium | The delete button triggers a native browser `confirm()` dialog — Selenium can't interact with the DOM while it's open | Added `driver.switchTo().alert().accept()` after each delete click |
-| 3 | Server-side error never shown | HTML5 `required` attribute on form inputs blocks submit at the browser level, so the server never runs validation and the error message never renders | Added `form.noValidate = true` via `executeScript` before each test submit |
-| 4 | Edit button opened Logout instead | `a.btn-secondary` matched the Logout link (which shares the same CSS class) before the Edit link in DOM order | Changed selector to `a[href*="/edit"]` |
-| 5 | Deleted prompt still visible | The `prompts` database had accumulated entries from previous failed runs — deleting one left others | Added a `BeforeAll` hook that truncates the DB before the full suite runs |
-| 6 | Navigation timing race condition | After login form submit, `driver.get('/prompts/new')` was called before the login redirect completed — the browser ended up at `/` with no `#title` input | Added `driver.wait(until.urlIs('/'))` after login to confirm redirect before proceeding |
+| 1 | Step timeout | Cucumber's 5s default is too short for headless Chrome | `setDefaultTimeout(30000)` |
+| 2 | `confirm()` dialog crashed Selenium | Native browser dialogs block DOM access | `driver.switchTo().alert().accept()` |
+| 3 | Server validation never triggered | HTML5 `required` blocks submit at browser level | `form.noValidate = true` via `executeScript` |
+| 4 | Edit button clicked Logout | `a.btn-secondary` matched Logout first in DOM | Changed selector to `a[href*="/edit"]` |
+| 5 | Deleted prompt still visible | DB accumulated duplicates from failed runs | `BeforeAll` hook truncates DB |
+| 6 | Navigation race condition | `driver.get()` called before login redirect finished | `driver.wait(until.urlIs('/'))` after login |
 
 **Final result: 14/14 scenarios passing (100%)**
 
-See `docs/` for the exported Allure reports at both stages:
-- `docs/allure-report-35.71%.pdf` — initial failing run
-- `docs/allure-report-100%.pdf` — all passing
-- CSV exports also included for data analysis
+### Allure report evidence
 
----
-
-## Running with Docker
-
-```bash
-docker-compose up --build
-```
-
-The app will be available at `http://localhost:3000`.
+| File | Description |
+|---|---|
+| [`docs/allure-report-35.71%.pdf`](docs/allure-report-35.71%.pdf) | First run — 5/14 passing |
+| [`docs/allure-report-100%.pdf`](docs/allure-report-100%.pdf) | Final run — 14/14 passing |
+| [`docs/data_behaviors_allure_35.71%.csv`](docs/data_behaviors_allure_35.71%.csv) | Scenario data export — first run |
+| [`docs/data_behaviors_allure_100%.csv`](docs/data_behaviors_allure_100%.csv) | Scenario data export — final run |
 
 ---
 

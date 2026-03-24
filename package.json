@@ -7,6 +7,7 @@
     "start": "node app.js",
     "lint": "eslint app.js src/**/*.js",
     "test": "rm -rf allure-results && cucumber-js",
+    "test:docker": "bash scripts/test-docker.sh",
     "report": "allure generate allure-results --clean -o allure-report"
   },
   "repository": {

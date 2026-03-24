@@ -1,10 +1,11 @@
 const { setWorldConstructor, setDefaultTimeout, World } = require('@cucumber/cucumber');
-
-setDefaultTimeout(30000);
 const { Builder } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
+setDefaultTimeout(30000);
+
 const BASE_URL = process.env.APP_URL || 'http://localhost:3000';
+const SELENIUM_URL = process.env.SELENIUM_URL || null;
 
 class AppWorld extends World {
   constructor(options) {
@@ -15,12 +16,29 @@ class AppWorld extends World {
 
   async openBrowser() {
     const opts = new chrome.Options();
-    opts.addArguments('--headless', '--no-sandbox', '--disable-dev-shm-usage');
+    opts.addArguments(
+      '--no-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--disable-features=HttpsUpgrades',
+      '--allow-running-insecure-content',
+    );
 
-    this.driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(opts)
-      .build();
+    if (SELENIUM_URL) {
+      // Remote WebDriver — used in Docker / CI with selenium/standalone-chrome
+      this.driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(opts)
+        .usingServer(SELENIUM_URL)
+        .build();
+    } else {
+      // Local WebDriver — used during local development
+      opts.addArguments('--headless');
+      this.driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(opts)
+        .build();
+    }
 
     await this.driver.manage().setTimeouts({ implicit: 5000 });
   }

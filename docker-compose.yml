@@ -1,0 +1,24 @@
+services:
+
+  app:
+    build: .
+    container_name: ai-prompt-manager
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/login"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-chrome
+    ports:
+      - "4444:4444"
+      - "7900:7900"   # VNC viewer — open http://localhost:7900 to watch tests run
+    shm_size: '2gb'   # Chrome needs shared memory to avoid crashes
+    environment:
+      - SE_NODE_MAX_SESSIONS=2
