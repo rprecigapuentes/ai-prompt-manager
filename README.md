@@ -41,6 +41,7 @@ Built as a portfolio project to demonstrate **test automation skills** using ind
   nvm install --lts
   nvm use --lts
   ```
+- Google Chrome (required for Selenium tests)
 
 ### Install & Run
 
@@ -63,6 +64,7 @@ The SQLite database is created automatically at `data/prompts.db` on first run.
 ai-prompt-manager/
 ├── app.js                  # Entry point — starts the Express server
 ├── package.json            # Dependencies and npm scripts
+├── cucumber.js             # Cucumber runner config (features, steps, Allure reporter)
 ├── src/
 │   ├── db.js               # SQLite database setup
 │   └── routes/
@@ -78,10 +80,12 @@ ai-prompt-manager/
 │   └── 404.ejs
 ├── public/
 │   └── css/style.css
-└── test/
-    ├── features/           # Gherkin .feature files
-    ├── step-definitions/   # Selenium step definitions
-    └── pages/              # Page Object Model classes
+├── test/
+│   ├── features/           # Gherkin .feature files (5 features, 14 scenarios)
+│   ├── step-definitions/   # Selenium step definitions
+│   ├── pages/              # Page Object Model classes
+│   └── support/            # World setup, hooks, Allure environment config
+└── docs/                   # Test evidence — Allure report exports (PDF + CSV)
 ```
 
 ---
@@ -98,15 +102,85 @@ ESLint checks all source files for errors and style issues (unused variables, mi
 
 ## Running Tests
 
+The app must be running before executing the test suite.
+
+**Terminal 1 — start the app:**
+```bash
+npm start
+```
+
+**Terminal 2 — run tests:**
 ```bash
 npm test
 ```
 
-Test reports are generated with Allure. After a test run:
+This clears previous results and runs all 14 Cucumber scenarios against a headless Chrome browser.
+
+### Generate & view the Allure report
 
 ```bash
-npx allure serve allure-results
+npm run report        # generates allure-report/ from allure-results/
+allure open allure-report
 ```
+
+---
+
+## Test Automation Framework
+
+### Structure
+
+| Directory | Purpose |
+|---|---|
+| `test/features/` | 5 Gherkin feature files written in plain English |
+| `test/step-definitions/` | JavaScript functions that connect Gherkin steps to Selenium actions |
+| `test/pages/` | Page Object Model — one class per page, encapsulates all selectors and actions |
+| `test/support/` | Cucumber World (WebDriver setup), Before/After hooks, Allure environment writer |
+
+### Feature files and scenarios
+
+| Feature | Scenarios |
+|---|---|
+| `create-prompt.feature` | Create with all fields, create without tags, fail without title |
+| `list-prompts.feature` | View all, search by keyword, filter by tag, clear filters |
+| `edit-prompt.feature` | Edit title/body, edit tags, fail without title |
+| `delete-prompt.feature` | Delete from list, delete from detail page |
+| `ai-response.feature` | Ask AI and receive response, button presence check |
+
+**Total: 14 scenarios, 97 steps**
+
+### Page Object Model classes
+
+| Class | Page covered |
+|---|---|
+| `BasePage.js` | Shared helpers: `click`, `type`, `getText`, `isVisible`, `waitForVisible` |
+| `LoginPage.js` | Login form |
+| `HomePage.js` | Prompt list, search, tag cloud |
+| `CreatePage.js` | Create prompt form |
+| `DetailPage.js` | Prompt detail, edit form, Ask AI |
+
+---
+
+## Test Results: From 35.71% to 100%
+
+On the first real browser run, **5 of 14 scenarios passed (35.71%)**. The remaining 9 failed due to a series of bugs in the test code — not in the app itself. Each bug was diagnosed and fixed systematically.
+
+### Bugs found and fixed
+
+| # | Bug | Root cause | Fix |
+|---|---|---|---|
+| 1 | Step timeout after 5s | Cucumber's default step timeout was too short for headless Chrome startup | Set `setDefaultTimeout(30000)` in `world.js` |
+| 2 | `confirm()` dialog crashed Selenium | The delete button triggers a native browser `confirm()` dialog — Selenium can't interact with the DOM while it's open | Added `driver.switchTo().alert().accept()` after each delete click |
+| 3 | Server-side error never shown | HTML5 `required` attribute on form inputs blocks submit at the browser level, so the server never runs validation and the error message never renders | Added `form.noValidate = true` via `executeScript` before each test submit |
+| 4 | Edit button opened Logout instead | `a.btn-secondary` matched the Logout link (which shares the same CSS class) before the Edit link in DOM order | Changed selector to `a[href*="/edit"]` |
+| 5 | Deleted prompt still visible | The `prompts` database had accumulated entries from previous failed runs — deleting one left others | Added a `BeforeAll` hook that truncates the DB before the full suite runs |
+| 6 | Navigation timing race condition | After login form submit, `driver.get('/prompts/new')` was called before the login redirect completed — the browser ended up at `/` with no `#title` input | Added `driver.wait(until.urlIs('/'))` after login to confirm redirect before proceeding |
+
+**Final result: 14/14 scenarios passing (100%)**
+
+See `docs/` for the exported Allure reports at both stages:
+- `docs/allure-report-35.71%.pdf` — initial failing run
+- `docs/allure-report-100%.pdf` — all passing
+- CSV exports also included for data analysis
 
 ---
 
@@ -122,4 +196,4 @@ The app will be available at `http://localhost:3000`.
 
 ## Author
 
-Built for the Jalasoft Automation Testing Bootcamp application.
+Rosemberth Steeven Preciga Puentes
